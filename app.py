@@ -151,15 +151,15 @@ class DeveloperEnvironmentOptimizer:
         Create a prompt for the Generative AI model based on system_info.
         """
         prompt = f"""
-        Answer the question as detailed as possible from the provided context. Make sure to provide all the details.
-        If the answer is not in the provided context, just say, "Answer is not available in the context." Don't provide a wrong answer.
+Answer the question as detailed as possible from the provided context. Make sure to provide all the details.
+If the answer is not in the provided context, just say, "Answer is not available in the context." Don't provide a wrong answer.
 
-        Context: {json.dumps(self.system_info, indent=2)}
+Context: {json.dumps(self.system_info, indent=2)}
 
-        Question: Based on the above system information, provide at least five detailed and actionable recommendations to optimize the developer's environment for better efficiency and performance.
+Question: Based on the above system information, provide at least five detailed and actionable recommendations to optimize the developer's environment for better efficiency and performance.
 
-        Answer (Use markdown formatting for numbering and bullet points):
-        """
+Answer (Use markdown formatting for numbering and bullet points):
+"""
         return prompt
 
     def get_generative_ai_recommendations(self):
@@ -238,17 +238,10 @@ class DeveloperEnvironmentOptimizer:
         self.analyze_running_processes()
         self.load_ide_settings()
         self.get_generative_ai_recommendations()
-        self.optimize_workflow()
-
-    def optimize_workflow(self):
-        """
-        Placeholder for additional workflow optimizations.
-        """
-        # Placeholder for workflow optimizations
-        self.recommendations
+        # Any additional workflow optimizations can be added here
 
 def main():
-    st.set_page_config(page_title="Developer Environment Optimizer", layout="wide")
+    st.set_page_config(page_title="🚀 Developer Environment Optimizer", layout="wide")
     st.title("🚀 Developer Environment Optimizer")
 
     # Initialize the optimizer
@@ -271,8 +264,20 @@ def main():
     if 'system_info' not in st.session_state:
         st.session_state.system_info = {}
 
+    # Sidebar with options
     st.sidebar.header("Options")
-    if st.sidebar.button("Run Analysis"):
+    st.sidebar.markdown("""
+    - **Run Analysis**: Analyze your system and generate optimization recommendations.
+    - **Apply Recommendations**: Apply the AI-generated recommendations to your IDE settings.
+    - **Refresh Analysis**: Reset the analysis and start fresh.
+    """)
+
+    # Action Buttons in Sidebar
+    run_analysis = st.sidebar.button("Run Analysis")
+    apply_recommendations = st.sidebar.button("Apply Recommendations to IDE Settings")
+    refresh_analysis = st.sidebar.button("Refresh Analysis")
+
+    if run_analysis:
         with st.spinner("Analyzing your system and generating recommendations..."):
             optimizer.run_analysis()
             st.session_state.recommendations = optimizer.recommendations
@@ -281,94 +286,115 @@ def main():
         st.success("Analysis complete!")
 
     if st.session_state.analysis_done:
-        st.header("📊 System Information")
-        sys_info = st.session_state.system_info
-        col1, col2, col3 = st.columns(3)
+        # Using Tabs for better organization
+        tabs = st.tabs(["📊 System Information", "💡 Recommendations", "📁 Running Processes"])
 
-        with col1:
-            st.subheader("CPU Usage")
-            cpu_percent = sys_info.get('cpu_percent', 0) / 100  # Normalize to [0.0, 1.0]
-            st.progress(cpu_percent)
-            st.write(f"{sys_info.get('cpu_percent', 0)}%")
+        # System Information Tab
+        with tabs[0]:
+            sys_info = st.session_state.system_info
+            st.header("📊 System Information")
+            col1, col2, col3 = st.columns(3)
 
-        with col2:
-            st.subheader("Memory Usage")
-            mem = sys_info.get('memory', {})
-            mem_percent = mem.get('percent', 0) / 100  # Normalize to [0.0, 1.0]
-            st.progress(mem_percent)
-            st.write(f"{mem.get('percent', 0)}%")
+            with col1:
+                st.subheader("CPU Usage")
+                cpu_percent = sys_info.get('cpu_percent', 0)
+                st.progress(cpu_percent / 100)
+                st.write(f"{cpu_percent}%")
 
-        with col3:
-            st.subheader("Disk Usage")
-            disk = sys_info.get('disk', {})
-            disk_percent = disk.get('percent', 0) / 100  # Normalize to [0.0, 1.0]
-            st.progress(disk_percent)
-            st.write(f"{disk.get('percent', 0)}%")
+            with col2:
+                st.subheader("Memory Usage")
+                mem = sys_info.get('memory', {})
+                mem_percent = mem.get('percent', 0)
+                st.progress(mem_percent / 100)
+                st.write(f"{mem_percent}%")
 
-        # Additional System Metrics Display
-        st.markdown("---")
-        st.header("📡 Network Usage")
-        net = sys_info.get('network', {})
-        total_net = net.get('bytes_sent', 0) + net.get('bytes_recv', 0)
-        st.write(f"**Total Bytes Sent:** {net.get('bytes_sent', 0)} bytes")
-        st.write(f"**Total Bytes Received:** {net.get('bytes_recv', 0)} bytes")
-        st.write(f"**Total Network Usage:** {total_net} bytes")
+            with col3:
+                st.subheader("Disk Usage")
+                disk = sys_info.get('disk', {})
+                disk_percent = disk.get('percent', 0)
+                st.progress(disk_percent / 100)
+                st.write(f"{disk_percent}%")
 
-        st.markdown("---")
-        st.header("🎮 GPU Usage")
-        gpu = sys_info.get('gpu', {})
-        if gpu and gpu.get('load') is not None:
-            st.write(f"**GPU Name:** {gpu.get('name', 'N/A')}")
-            st.write(f"**GPU Load:** {gpu.get('load', 0)}%")
-            st.write(f"**GPU Memory Used:** {gpu.get('memory_used', 0)} MB / {gpu.get('memory_total', 0)} MB")
-        else:
-            st.write("No GPU information available or GPUtil not installed.")
+            # Additional System Metrics Display
+            st.markdown("---")
+            st.subheader("📡 Network Usage")
+            net = sys_info.get('network', {})
+            total_net = net.get('bytes_sent', 0) + net.get('bytes_recv', 0)
+            net_col1, net_col2, net_col3 = st.columns(3)
 
-        st.markdown("---")
-        st.header("🖥️ Screen Resolution")
-        screen_res = sys_info.get('screen_resolution', (0, 0))
-        st.write(f"**Width:** {screen_res[0]} px")
-        st.write(f"**Height:** {screen_res[1]} px")
+            with net_col1:
+                st.metric("Bytes Sent", f"{net.get('bytes_sent', 0)} bytes")
+            with net_col2:
+                st.metric("Bytes Received", f"{net.get('bytes_recv', 0)} bytes")
+            with net_col3:
+                st.metric("Total Usage", f"{total_net} bytes")
 
-        st.markdown("---")
-        st.header("💡 Optimization Recommendations")
-        recommendations = st.session_state.recommendations
-        if recommendations:
-            st.markdown(recommendations, unsafe_allow_html=True)
-        else:
-            st.write("No recommendations available.")
+            st.markdown("---")
+            st.subheader("🎮 GPU Usage")
+            gpu = sys_info.get('gpu', {})
+            if gpu and gpu.get('load') is not None:
+                gpu_col1, gpu_col2, gpu_col3 = st.columns(3)
+                with gpu_col1:
+                    st.metric("GPU Name", gpu.get('name', 'N/A'))
+                with gpu_col2:
+                    st.metric("GPU Load", f"{gpu.get('load', 0)}%")
+                with gpu_col3:
+                    st.metric("GPU Memory", f"{gpu.get('memory_used', 0)} MB / {gpu.get('memory_total', 0)} MB")
+            else:
+                st.write("No GPU information available or GPUtil not installed.")
 
-        st.markdown("---")
-        st.header("⚙️ Apply IDE Recommendations")
-        if st.button("Apply Recommendations to IDE Settings"):
-            with st.spinner("Applying IDE settings..."):
-                applied_changes = optimizer.apply_ide_recommendations()
-                st.session_state.applied_changes = applied_changes
-            for change in st.session_state.applied_changes:
-                st.write(f"- {change}")
-            st.success("IDE settings updated.")
+            st.markdown("---")
+            st.subheader("🖥️ Screen Resolution")
+            screen_res = sys_info.get('screen_resolution', (0, 0))
+            res_col1, res_col2 = st.columns(2)
+            with res_col1:
+                st.metric("Width", f"{screen_res[0]} px")
+            with res_col2:
+                st.metric("Height", f"{screen_res[1]} px")
 
-        st.markdown("---")
-        st.header("🔄 Refresh Analysis")
-        if st.button("Refresh Analysis"):
-            # Reset session state variables
-            st.session_state.analysis_done = False
-            st.session_state.recommendations = ""
-            st.session_state.system_info = {}
-            st.session_state.applied_changes = []
-            st.success("Analysis reset. Click 'Run Analysis' to start again.")
+        # Recommendations Tab
+        with tabs[1]:
+            st.header("💡 Optimization Recommendations")
+            recommendations = st.session_state.recommendations
+            if recommendations:
+                st.markdown(recommendations, unsafe_allow_html=True)
+            else:
+                st.write("No recommendations available.")
 
-        st.markdown("---")
-        st.header("📁 Running Processes")
-        processes = sys_info.get('processes', [])
-        if processes:
-            # Convert the list of processes to a DataFrame
-            df = pd.DataFrame(processes).head(100)
-            # Display the DataFrame using Streamlit's data editor
-            st.dataframe(df)
-            st.write("Displaying top 100 running processes.")
-        else:
-            st.write("No process information available.")
+            # Apply Recommendations Button
+            if apply_recommendations:
+                with st.spinner("Applying IDE settings..."):
+                    applied_changes = optimizer.apply_ide_recommendations()
+                    st.session_state.applied_changes = applied_changes
+                with st.expander("View Applied Changes", expanded=True):
+                    for change in st.session_state.applied_changes:
+                        st.write(f"- {change}")
+                st.success("IDE settings updated.")
+
+        # Running Processes Tab
+        with tabs[2]:
+            st.header("📁 Running Processes")
+            processes = sys_info.get('processes', [])
+            if processes:
+                # Convert the list of processes to a DataFrame
+                df = pd.DataFrame(processes).head(100)
+                # Enhance the DataFrame display
+                df['cpu_percent'] = df['cpu_percent'].astype(float)
+                df['memory_percent'] = df['memory_percent'].astype(float)
+                # Sort processes by CPU usage
+                df = df.sort_values(by='cpu_percent', ascending=False)
+                st.dataframe(df.style.highlight_max(axis=0, color='lightgreen'), height=600)
+                st.write("Displaying top 100 running processes.")
+            else:
+                st.write("No process information available.")
+
+    if refresh_analysis:
+        # Reset session state variables
+        st.session_state.analysis_done = False
+        st.session_state.recommendations = ""
+        st.session_state.system_info = {}
+        st.session_state.applied_changes = []
+        st.success("Analysis reset. Click 'Run Analysis' to start again.")
 
 if __name__ == "__main__":
     main()
