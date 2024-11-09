@@ -7,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import logging
 from dotenv import load_dotenv
+import time
 
 # Load environment variables from .env file
 load_dotenv()
@@ -89,8 +90,8 @@ class DeveloperEnvironmentOptimizer:
         # Network Usage
         net_io = psutil.net_io_counters()
         self.system_info['network'] = {
-            'bytes_sent': net_io.bytes_sent,
-            'bytes_recv': net_io.bytes_recv
+            'bytes_sent': round(net_io.bytes_sent / (1024 ** 3), 3),  # Convert bytes to GB, rounded to 3 decimal places
+            'bytes_recv': round(net_io.bytes_recv / (1024 ** 3), 3)   # Convert bytes to GB, rounded to 3 decimal places
         }
 
         # GPU Usage
@@ -151,15 +152,15 @@ class DeveloperEnvironmentOptimizer:
         Create a prompt for the Generative AI model based on system_info.
         """
         prompt = f"""
-Answer the question as detailed as possible from the provided context. Make sure to provide all the details.
-If the answer is not in the provided context, just say, "Answer is not available in the context." Don't provide a wrong answer.
+        Answer the question as detailed as possible from the provided context. Make sure to provide all the details.
+        If the answer is not in the provided context, just say, "Answer is not available in the context." Don't provide a wrong answer.
 
-Context: {json.dumps(self.system_info, indent=2)}
+        Context: {json.dumps(self.system_info, indent=2)}
 
-Question: Based on the above system information, provide at least five detailed and actionable recommendations to optimize the developer's environment for better efficiency and performance.
+        Question: Based on the above system information, provide at least five detailed and actionable recommendations to optimize the developer's environment for better efficiency and performance.
 
-Answer (Use markdown formatting for numbering and bullet points):
-"""
+        Answer (Use markdown formatting for numbering and bullet points):
+        """
         return prompt
 
     def get_generative_ai_recommendations(self):
@@ -234,11 +235,39 @@ Answer (Use markdown formatting for numbering and bullet points):
         """
         Run the full analysis and generate recommendations.
         """
+        progress_bar = st.progress(0)
+        status_text = st.empty()
+        
+        status_text.text("Analyzing system...")
         self.analyze_system()
+        progress_bar.progress(25)
+        
+        status_text.text("Analyzing processes...")
         self.analyze_running_processes()
+        progress_bar.progress(50)
+        
+        status_text.text("Loading IDE settings...")
         self.load_ide_settings()
+        progress_bar.progress(75)
+        
+        status_text.text("Generating recommendations...")
         self.get_generative_ai_recommendations()
-        # Any additional workflow optimizations can be added here
+        progress_bar.progress(100)
+        
+        status_text.text("Analysis complete!")
+        time.sleep(1)
+        status_text.empty()
+        progress_bar.empty()
+
+def create_sidebar():
+    st.sidebar.title("Control Panel")
+    # Sidebar with options
+    st.sidebar.header("Options")
+    st.sidebar.markdown("""
+    - **Run Analysis**: Analyze your system and generate optimization recommendations.
+    - **Apply Recommendations**: Apply the AI-generated recommendations to your IDE settings.
+    - **Refresh Analysis**: Reset the analysis and start fresh.
+    """)
 
 def main():
     st.set_page_config(page_title="🚀 Developer Environment Optimizer", layout="wide")
@@ -264,13 +293,7 @@ def main():
     if 'system_info' not in st.session_state:
         st.session_state.system_info = {}
 
-    # Sidebar with options
-    st.sidebar.header("Options")
-    st.sidebar.markdown("""
-    - **Run Analysis**: Analyze your system and generate optimization recommendations.
-    - **Apply Recommendations**: Apply the AI-generated recommendations to your IDE settings.
-    - **Refresh Analysis**: Reset the analysis and start fresh.
-    """)
+    create_sidebar()
 
     # Action Buttons in Sidebar
     run_analysis = st.sidebar.button("Run Analysis")
@@ -278,6 +301,8 @@ def main():
     refresh_analysis = st.sidebar.button("Refresh Analysis")
 
     if run_analysis:
+        with st.spinner("🚀 Initializing Developer Environment Optimizer..."):
+            time.sleep(1)  # Short delay for better UX
         with st.spinner("Analyzing your system and generating recommendations..."):
             optimizer.run_analysis()
             st.session_state.recommendations = optimizer.recommendations
@@ -323,11 +348,11 @@ def main():
             net_col1, net_col2, net_col3 = st.columns(3)
 
             with net_col1:
-                st.metric("Bytes Sent", f"{net.get('bytes_sent', 0)} bytes")
+                st.metric("Bytes Sent", f"{net.get('bytes_sent', 0)} GB")
             with net_col2:
-                st.metric("Bytes Received", f"{net.get('bytes_recv', 0)} bytes")
+                st.metric("Bytes Received", f"{net.get('bytes_recv', 0)} GB")
             with net_col3:
-                st.metric("Total Usage", f"{total_net} bytes")
+                st.metric("Total Usage", f"{total_net} GB")
 
             st.markdown("---")
             st.subheader("🎮 GPU Usage")
