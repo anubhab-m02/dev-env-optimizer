@@ -270,8 +270,8 @@ def create_sidebar():
     """)
 
 def main():
-    st.set_page_config(page_title="🚀 Developer Environment Optimizer", layout="wide")
-    st.title("🚀 Developer Environment Optimizer")
+    st.set_page_config(page_title=" Developer Environment Optimizer", layout="wide")
+    st.title("Developer Environment Optimizer")
 
     # Initialize the optimizer
     try:
@@ -301,7 +301,7 @@ def main():
     refresh_analysis = st.sidebar.button("Refresh Analysis")
 
     if run_analysis:
-        with st.spinner("🚀 Initializing Developer Environment Optimizer..."):
+        with st.spinner("Initializing Developer Environment Optimizer..."):
             time.sleep(1)  # Short delay for better UX
         with st.spinner("Analyzing your system and generating recommendations..."):
             optimizer.run_analysis()
@@ -312,12 +312,12 @@ def main():
 
     if st.session_state.analysis_done:
         # Using Tabs for better organization
-        tabs = st.tabs(["📊 System Information", "💡 Recommendations", "📁 Running Processes"])
+        tabs = st.tabs(["System Information", "Recommendations", "Running Processes"])
 
         # System Information Tab
         with tabs[0]:
             sys_info = st.session_state.system_info
-            st.header("📊 System Information")
+            st.header("System Information")
             col1, col2, col3 = st.columns(3)
 
             with col1:
@@ -342,7 +342,7 @@ def main():
 
             # Additional System Metrics Display
             st.markdown("---")
-            st.subheader("📡 Network Usage")
+            st.subheader("Network Usage")
             net = sys_info.get('network', {})
             total_net = net.get('bytes_sent', 0) + net.get('bytes_recv', 0)
             net_col1, net_col2, net_col3 = st.columns(3)
@@ -355,7 +355,7 @@ def main():
                 st.metric("Total Usage", f"{total_net} GB")
 
             st.markdown("---")
-            st.subheader("🎮 GPU Usage")
+            st.subheader("GPU Usage")
             gpu = sys_info.get('gpu', {})
             if gpu and gpu.get('load') is not None:
                 gpu_col1, gpu_col2, gpu_col3 = st.columns(3)
@@ -369,7 +369,7 @@ def main():
                 st.write("No GPU information available or GPUtil not installed.")
 
             st.markdown("---")
-            st.subheader("🖥️ Screen Resolution")
+            st.subheader("Screen Resolution")
             screen_res = sys_info.get('screen_resolution', (0, 0))
             res_col1, res_col2 = st.columns(2)
             with res_col1:
@@ -379,7 +379,7 @@ def main():
 
         # Recommendations Tab
         with tabs[1]:
-            st.header("💡 Optimization Recommendations")
+            st.header("Optimization Recommendations")
             recommendations = st.session_state.recommendations
             if recommendations:
                 st.markdown(recommendations, unsafe_allow_html=True)
@@ -398,7 +398,7 @@ def main():
 
         # Running Processes Tab
         with tabs[2]:
-            st.header("📁 Running Processes")
+            st.header("Running Processes")
             processes = sys_info.get('processes', [])
             if processes:
                 # Convert the list of processes to a DataFrame
