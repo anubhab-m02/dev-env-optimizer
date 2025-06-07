@@ -1,7 +1,0 @@
-streamlit
-psutil
-google-generativeai
-GPUtil
-screeninfo
-pandas
-python-dotenv
